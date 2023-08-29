@@ -1,27 +1,30 @@
-const loadPhone = async(searchText) =>{
+const loadPhone = async(searchText=13, isShowAll) =>{
     const res = await fetch (`https://openapi.programming-hero.com/api/phones?search=${searchText}`);
     const data = await res.json();
     const phones = data.data;
-    // console.log(phones);
-    displayPhones(phones);
+    console.log(phones);
+    displayPhones(phones, isShowAll);
 }
 
-const displayPhones = phones =>{
+const displayPhones = (phones, isShowAll) =>{
     const phoneContainer = document.getElementById('phone-container');
     phoneContainer.textContent = ''
 
 //    display show all button if there are more than 12 phones
 const showAllContainer = document.getElementById('show-all-container');
-    if(phones.length > 12){
+    if(phones.length > 12 && !isShowAll){
         showAllContainer.classList.remove('hidden')
     }
     else{
         showAllContainer.classList.add('hidden')
     }
-    
+    // console.log('is show all', isShowAll);
+    if(!isShowAll){
+        phones = phones.slice(0,12);
+    }
     //display only first 12 phone
 
-    phones = phones.slice(0,5);
+
 
     phones.forEach(phone => {
         console.log(phone);
@@ -33,7 +36,7 @@ const showAllContainer = document.getElementById('show-all-container');
             <h2 class="card-title">${phone.phone_name}</h2>
             <p>If a dog chews shoes whose shoes does he choose?</p>
             <div class="card-actions justify-end">
-            <button class="btn btn-primary">Buy Now</button>
+            <button onclick='handleShowDetaile("${phone.slug}")'  class="btn btn-primary">Buy Now</button>
             </div>
         </div>
         `;
@@ -42,12 +45,40 @@ const showAllContainer = document.getElementById('show-all-container');
     toggleLoadingSpinner(false)
 }
 
-const handleSearch = () => {
+const handleShowDetaile = async(id) =>{
+    console.log('clicked show the detail',id);
+    const res = await fetch (`https://openapi.programming-hero.com/api/phone/${id}`);
+    const data = await res.json();
+    console.log(data);
+    const phone = data.data;
+    showPhoneDetails(data.data)
+}
+
+const showPhoneDetails = (phone) =>{
+    console.log(phone);
+    const phoneName = document.getElementById('phone-name');
+    phoneName.innerText = phone.name;
+    const showDetailContainer = document.getElementById('show-detail-container')
+    showDetailContainer.innerHTML =`
+    <img src="${phone.image}" alt=""\>
+    <p>Stroage:<span>${phone?.mainFeatures?.storage}</span></p>
+    <p>Display Size:<span>${phone?.mainFeatures?.displaySize}</span></p>
+    <p>Chipset<span>${phone?.mainFeatures?.chipSet}</span></p>
+    <p>Memory:<span>${phone?.mainFeatures?.memory}</span></p>
+    <p>Release Date:<span>${phone?.releaseDate}</span></p>
+    <p>Brand:<span>${phone?.brand}</span></p>
+    <p>GPS:<span>${phone?.others?.GPS}</span></p>
+    `
+   
+    show_details_modal.showModal();
+} 
+
+const handleSearch = (isShowAll) => {
     toggleLoadingSpinner(true);
     const searchfield = document.getElementById('search-field');
     const searchText = searchfield.value;
     console.log(searchText);
-    loadPhone(searchText)
+    loadPhone(searchText, isShowAll)
 }
 
 const handleSearch2 = () => {
@@ -59,12 +90,20 @@ const handleSearch2 = () => {
 
 const toggleLoadingSpinner = (isLoading) => {
     const loadingSpinner = document.getElementById('loading-spinner');
+    console.log(isLoading);
     if(isLoading){
-        loadingSpinner.classList.remove('remove')
+        loadingSpinner.classList.remove('hidden')
+        console.log(loadingSpinner);
     }
     else{
         loadingSpinner.classList.add('hidden')
     }
 }
-// loadPhone();
+
+// handleShowALl
+
+const handleShowAll = () =>{
+    handleSearch(true)
+}
+loadPhone();
 
